@@ -23,7 +23,7 @@ func main() {
 	}
 	client := http.Client{}
 	resp, err := client.Do(req)
-	if err != nil {
+	if err != nil || resp.StatusCode != http.StatusOK {
 		log.Fatal("Erro ao realizar requisição")
 	}
 	defer resp.Body.Close()

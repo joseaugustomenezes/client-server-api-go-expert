@@ -35,7 +35,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 	client := http.Client{}
 	resp, err := client.Do(req)
-	if err != nil {
+	if err != nil || resp.StatusCode != http.StatusOK {
 		log.Println("Erro ao realizar requisição")
 		http.Error(w, "Erro ao realizar requisição", http.StatusInternalServerError)
 	}
@@ -61,7 +61,11 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	bdCtx, bdCancel := context.WithTimeout(context.Background(), time.Millisecond*10)
 	defer bdCancel()
-	db.WithContext(bdCtx).Create(&data.Cotacao)
+	err = db.WithContext(bdCtx).Create(&data.Cotacao).Error
+	if err != nil {
+		log.Println("Erro ao adicionar cotação ao bd")
+		http.Error(w, "Erro ao adicionar cotação ao bd", http.StatusInternalServerError)
+	}
 	w.Header().Set("content-type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	responseBody, _ := json.Marshal(data.Cotacao)
